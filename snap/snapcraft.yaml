@@ -17,24 +17,6 @@ base: core18
 grade: stable
 confinement: strict
 
-plugs:
-  gnome-3-28-1804:
-    interface: content
-    target: gnome-platform
-    default-provider: gnome-3-28-1804:gnome-3-28-1804
-  gtk-3-themes:
-    interface: content
-    target: $SNAP/share/themes
-    default-provider: gtk-common-themes:gtk-3-themes
-  icon-themes:
-    interface: content
-    target: $SNAP/share/icons
-    default-provider: gtk-common-themes:icon-themes
-  sound-themes:
-    interface: content
-    target: $SNAP/share/sounds
-    default-provider: gtk-common-themes:sounds-themes
-
 slots:
   pick-colour-picker-dbus:
     interface: dbus
@@ -46,29 +28,13 @@ apps:
     environment:
       XDG_DATA_DIRS: $SNAP/share:$XDG_DATA_DIRS
       LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/libunity
-    command: desktop-launch $SNAP/bin/pick-colour-picker
+    command: bin/pick-colour-picker
+    extensions: [ gnome-3-34 ]
     desktop: usr/share/applications/pick-colour-picker.desktop
-    plugs:
-      - desktop
-      - gsettings
-      - home
-      - unity7
-      - wayland
-      - x11
 
 parts:
-  desktop-gtk3:
-    build-packages:
-      - libgtk-3-dev
-    make-parameters:
-      - FLAVOR=gtk3
-    plugin: make
-    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-    source-subdir: gtk
 
   pick-colour-picker:
-    after:
-      - desktop-gtk3
     source: .
     plugin: python
     python-version: python3
@@ -84,6 +50,7 @@ parts:
     override-pull: |
       snapcraftctl pull
       sed -i 's|Icon=pick-colour-picker|Icon=${SNAP}/usr/share/pixmaps/pick-colour-picker.png|g' pick-colour-picker.desktop
+      echo "USE_gtk3=true" >> $SNAPCRAFT_STAGE/flavor-select
     # Most of what Pick requires is provided by the GNOME platform snap; so just prime what we need.
     prime:
       - bin
